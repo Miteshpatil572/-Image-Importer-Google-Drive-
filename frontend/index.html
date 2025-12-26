@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FotoOwl – Import Images</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .input-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .image-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .image-card {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 6px;
+            background: #fafafa;
+            text-align: center;
+        }
+
+        .image-card img {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            margin-bottom: 10px;
+        }
+
+        .image-card strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .image-card small {
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📷 FotoOwl Image Import</h1>
+
+    <div class="container">
+
+        <div class="input-box">
+            <input type="text" id="folderUrl" placeholder="Enter Google Drive Folder URL">
+            <button onclick="importImages()">Import</button>
+        </div>
+
+        <h3>Imported Images</h3>
+        <div id="images" class="image-container"></div>
+
+    </div>
+
+    <script>
+        const backendUrl = "http://127.0.0.1:5000";
+
+        async function importImages() {
+            const folderUrl = document.getElementById("folderUrl").value;
+            if (!folderUrl) {
+                alert("Please enter folder URL");
+                return;
+            }
+
+            await fetch(`${backendUrl}/import/google-drive`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ folder_url: folderUrl })
+            });
+
+            fetchImages();
+        }
+
+        async function fetchImages() {
+            const response = await fetch(`${backendUrl}/images`);
+            const images = await response.json();
+
+            const container = document.getElementById("images");
+            container.innerHTML = "";
+
+            images.forEach(img => {
+                const div = document.createElement("div");
+                div.className = "image-card";
+                div.innerHTML = `
+                    <img src="https://via.placeholder.com/150" alt="image">
+                    <strong>${img.name}</strong>
+                    <small>${img.mime_type}<br>${img.size} bytes</small>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        fetchImages();
+    </script>
+
+</body>
+</html>
